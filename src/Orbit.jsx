@@ -147,7 +147,8 @@ function Orbit() {
           el.style.opacity = "1";
           el.style.pointerEvents = "auto";
           el.style.transition = "transform 0.6s ease, opacity 0.3s";
-          el.style.transform = `translate(80px, ${140 + idx * 90}px)`;
+          // 작업물이 8개라 간격을 좁게 잡아야 한 화면에 들어옵니다
+          el.style.transform = `translate(40px, ${70 + idx * 62}px)`;
         } else {
           el.style.opacity = "1";
           el.style.pointerEvents = "auto";
@@ -184,11 +185,22 @@ function Orbit() {
 
   return (
     <>
-      <button className="toggle" onClick={toggle}>
+      <button className={listMode ? "toggle list" : "toggle"} onClick={toggle}>
         {listMode ? "놀기" : "작업물 보기"}
       </button>
 
-      <div className="stage" ref={stageRef}>
+      <div className={listMode ? "stage list" : "stage"} ref={stageRef}>
+        {/* 헤드라인. pointer-events: none 이라 이모지 밀어내기에 방해되지 않습니다 */}
+        <div className="hero">
+          <h1>고객의 말을 콘텐츠로<br />번역하는 마케터, 조수인</h1>
+          <p>
+            7년간 하루 평균 50건의 고객 목소리를 들었고,<br />
+            하루 평균 200건에서 수천 건까지의 주문을 처리했습니다.<br />
+            그 데이터로 SNS 팔로워를 10개월 만에 10배로 키웠습니다.
+          </p>
+        </div>
+        <p className="hint">이모지를 밀어보세요 · 클릭하면 이동</p>
+
         {ITEMS.map((item, i) => (
           <button
             key={item.id}

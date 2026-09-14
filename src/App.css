@@ -1,3 +1,4 @@
+/* ── 첫 화면 (물리 엔진 무대) ─────────────────────────── */
 .stage {
   position: relative;
   width: 100vw;
@@ -20,16 +21,53 @@
   align-items: center;
   gap: 12px;
   line-height: 1;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
-.stage button.orb-work {
-  font-size: 64px;
+.stage button.orb-work { font-size: 56px; }
+.stage button.orb-fun  { font-size: 30px; }
+
+/* 헤드라인. 이모지가 그 위로 지나다녀도 마우스 이벤트를 가로채지 않게 */
+.hero {
+  position: absolute;
+  top: 48px;
+  left: 48px;
+  max-width: 560px;
+  pointer-events: none;
+  z-index: 10;
 }
 
-.stage button.orb-fun {
-  font-size: 34px;
+.hero h1 {
+  margin: 0 0 16px;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: #111;
 }
 
+.hero p {
+  margin: 0;
+  font-size: clamp(14px, 1.4vw, 17px);
+  line-height: 1.6;
+  color: #444;
+}
+
+/* 목록 모드: 헤드라인은 숨기고, 토글은 오른쪽 위로 */
+.stage.list .hero { opacity: 0; transition: opacity 0.3s; }
+.hero { transition: opacity 0.3s; }
+.toggle.list { top: 24px; left: auto; right: 24px; transform: none; }
+
+.hint {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+  pointer-events: none;
+}
 
 .toggle {
   position: absolute;
@@ -41,80 +79,119 @@
   border: 0;
   border-radius: 999px;
   background: #fff;
+  font-size: 15px;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* 목록 모드일 때 이모지 옆에 붙는 제목 */
 .stage button .label {
   display: inline-block;
-  min-width: 300px;
-  background: yellow;
-}
-
-.stage button {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  will-change: transform;
-  backface-visibility: hidden;
-}
-
-.work {
-  padding: 100px 24px;
-  max-width: 720px;
-  margin: 0 auto;
-}
-
-.work h2 {
-  font-size: 32px;
-  margin-bottom: 40px;
-}
-
-.work-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.work-card {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 24px;
-  border-radius: 16px;
-  background: #f4f4f4;
-  text-decoration: none;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  font-weight: 600;
   color: #111;
-  transition: background 0.2s;
+  white-space: nowrap;
 }
 
-.work-card:hover {
-  background: #e8e8e8;
-}
-
-.work-emoji {
-  font-size: 32px;
-}
-
-.work-label {
-  flex: 1;
-  font-size: 17px;
-}
-
-.work-arrow {
-  color: #888;
-}
-
+/* ── 작업물 섹션 ─────────────────────────────────────── */
 .work-section {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 20px;
-  padding: 40px;
+  padding: 80px 24px;
 }
 
-.work-section:nth-child(odd) {
-  background: #f7f7f7;
+.work-section:nth-child(odd) { background: #f7f7f7; }
+
+.work-inner {
+  max-width: 640px;
+  width: 100%;
+}
+
+.work-index {
+  margin: 0 0 24px;
+  font-size: 13px;
+  color: #999;
+  letter-spacing: 0.1em;
+}
+
+.work-emoji {
+  display: block;
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.work-section h2 {
+  margin: 0 0 8px;
+  font-size: clamp(26px, 3.2vw, 36px);
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.work-number {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.work-period {
+  margin: 0 0 28px;
+  font-size: 14px;
+  color: #777;
+}
+
+.work-bullets {
+  margin: 0 0 32px;
+  padding-left: 20px;
+  line-height: 1.7;
+  color: #333;
+}
+
+.work-bullets li + li { margin-top: 6px; }
+
+/* 문제 → 한 일 → 결과 : 마지막 줄(결과)만 굵게 */
+.work-bullets li:last-child { font-weight: 600; color: #111; }
+
+.work-link {
+  display: inline-block;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: #111;
+  color: #fff;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.work-link:hover { background: #333; }
+
+/* ── 연락처 ─────────────────────────────────────────── */
+.contact {
+  padding: 120px 24px;
+  text-align: center;
+  background: #111;
+  color: #fff;
+}
+
+.contact h2 { margin: 0 0 8px; font-size: 28px; }
+.contact p  { margin: 0 0 32px; color: #aaa; }
+
+.contact a {
+  display: block;
+  margin: 8px 0;
+  color: #fff;
+  font-size: 17px;
+}
+
+/* ── 모바일 ─────────────────────────────────────────── */
+@media (max-width: 640px) {
+  .hero { top: 24px; left: 20px; right: 20px; }
+  .stage button.orb-work { font-size: 40px; }
+  .stage button.orb-fun  { font-size: 24px; }
+  .stage button .label { font-size: 14px; }
+  .work-section { padding: 64px 20px; min-height: auto; }
 }
