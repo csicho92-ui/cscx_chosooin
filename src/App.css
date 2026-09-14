@@ -79,7 +79,9 @@
   border: 0;
   border-radius: 8px;
   background: #fff;
+  color: #111; /* 다크모드에서 기본 버튼 글자색이 흰색이 되는 것 방지 */
   font-size: 15px;
+  font-weight: 600;
   cursor: pointer;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
 }

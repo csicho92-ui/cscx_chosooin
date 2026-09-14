@@ -1,5 +1,7 @@
 * { box-sizing: border-box; }
 
+:root { color-scheme: light; } /* 페이지는 항상 라이트로 */
+
 body {
   margin: 0;
   font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
