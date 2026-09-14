@@ -1,4 +1,4 @@
-import { ITEMS } from "./data/items";
+import { ITEMS, HERO } from "./data";
 
 function Work() {
   const works = ITEMS.filter((item) => item.type === "work");
@@ -29,7 +29,7 @@ function Work() {
 
       <footer className="contact" id="contact">
         <h2>조수인</h2>
-        <p>고객의 말을 콘텐츠로 번역하는 마케터</p>
+        <p>{HERO.title.join(" ")}</p>
         <a href="mailto:whtndls5@naver.com">whtndls5@naver.com</a>
         <a href="https://blog.naver.com/whtndls5" target="_blank" rel="noreferrer">
           blog.naver.com/whtndls5

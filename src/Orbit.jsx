@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Matter from "matter-js";
-import { ITEMS } from "./data/items";
+import { ITEMS, HERO } from "./data";
 
 function Orbit() {
   const stageRef = useRef(null);
@@ -192,11 +192,11 @@ function Orbit() {
       <div className={listMode ? "stage list" : "stage"} ref={stageRef}>
         {/* 헤드라인. pointer-events: none 이라 이모지 밀어내기에 방해되지 않습니다 */}
         <div className="hero">
-          <h1>고객의 말을 콘텐츠로<br />번역하는 마케터, 조수인</h1>
+          <h1>{HERO.title[0]}<br />{HERO.title[1]}</h1>
           <p>
-            7년간 하루 평균 50건의 고객 목소리를 들었고,<br />
-            하루 평균 200건에서 수천 건까지의 주문을 처리했습니다.<br />
-            그 데이터로 SNS 팔로워를 10개월 만에 10배로 키웠습니다.
+            {HERO.lines.map((line) => (
+              <span key={line}>{line}<br /></span>
+            ))}
           </p>
         </div>
         <p className="hint">이모지를 밀어보세요 · 클릭하면 이동</p>
