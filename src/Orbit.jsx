@@ -35,18 +35,23 @@ function Orbit() {
       mouse.x = -9999;
       mouse.y = -9999;
     };
+    // 터치는 첫 손가락 위치를 마우스처럼 씁니다
+    const onTouch = (e) => onMove(e.touches[0]);
     stage.addEventListener("mousemove", onMove);
     stage.addEventListener("mouseleave", onLeave);
+    stage.addEventListener("touchmove", onTouch, { passive: true });
+    stage.addEventListener("touchend", onLeave);
 
     const engine = Matter.Engine.create();
     engine.gravity.y = 0;
 
-    // 가로로 넓게, 세로로 납작하게 퍼지는 타원 궤도
-    const spreadX = 1;
-    const spreadY = 0.8;
-    // 궤도 중심. 왼쪽 위 헤드라인을 피해 살짝 오른쪽 아래로
-    const cx = W * 0.58;
-    const cy = H * 0.56;
+    // 가로 화면: 납작한 타원, 오른쪽 아래로 치우쳐 헤드라인을 피함
+    // 세로 화면(폰): 세로로 긴 타원, 헤드라인 아래쪽에 배치
+    const portrait = H > W;
+    const spreadX = portrait ? 0.95 : 1;
+    const spreadY = portrait ? 1.1 : 0.8;
+    const cx = portrait ? W * 0.5 : W * 0.58;
+    const cy = portrait ? H * 0.62 : H * 0.56;
 
     const bodies = ITEMS.map((item, i) => {
       const isWork = item.type === "work";
@@ -54,7 +59,9 @@ function Orbit() {
       const total = isWork ? workCount : ITEMS.length - workCount;
       const angle = (order / total) * Math.PI * 2;
       // 작업물은 가로로 넉넉하게, 취미는 그보다 바깥
-      const ring = isWork ? Math.min(W * 0.28, H * 0.33) : Math.min(W * 0.4, H * 0.45);
+      const ring = portrait
+        ? (isWork ? Math.min(W * 0.36, H * 0.24) : Math.min(W * 0.46, H * 0.3))
+        : (isWork ? Math.min(W * 0.28, H * 0.33) : Math.min(W * 0.4, H * 0.45));
 
       const body = Matter.Bodies.circle(
         cx + Math.cos(angle) * ring * spreadX,
@@ -176,6 +183,8 @@ function Orbit() {
       clearTimeout(resizeTimer);
       stage.removeEventListener("mousemove", onMove);
       stage.removeEventListener("mouseleave", onLeave);
+      stage.removeEventListener("touchmove", onTouch);
+      stage.removeEventListener("touchend", onLeave);
       cancelAnimationFrame(frame);
       Matter.Runner.stop(runner);
       Matter.Engine.clear(engine);
