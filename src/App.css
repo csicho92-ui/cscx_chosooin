@@ -214,7 +214,13 @@
 
 /* ── 모바일 ─────────────────────────────────────────── */
 @media (max-width: 640px) {
-  .hero { top: 24px; left: 20px; right: 20px; }
+  .hero { top: 20px; left: 20px; right: 20px; }
+  .hero h1 { font-size: 24px; }
+  .hero p { font-size: 13px; }
+  .hero p br { display: none; } /* 폰에선 문장이 알아서 흐르게 */
+  .hint { display: none; } /* 폰에선 밀어보라는 힌트 대신 손가락으로 자연스럽게 */
+  .toggle { top: auto; bottom: 32px; transform: translateX(-50%); }
+  .toggle.list { bottom: auto; top: 16px; right: 16px; transform: none; }
   .stage button.orb-work { font-size: 40px; }
   .stage button.orb-fun  { font-size: 24px; }
   .stage button .label { font-size: 14px; }
