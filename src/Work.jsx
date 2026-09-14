@@ -8,21 +8,34 @@ function Work() {
       {works.map((item, i) => (
         <section key={item.id} id={item.slug} className="work-section">
           <div className="work-inner">
-            <p className="work-index">
-              {String(i + 1).padStart(2, "0")} / {String(works.length).padStart(2, "0")}
-            </p>
-            <span className="work-emoji">{item.emoji}</span>
-            <h2>{item.label}</h2>
-            <p className="work-number">{item.number}</p>
-            <p className="work-period">{item.period}</p>
-            <ul className="work-bullets">
-              {item.bullets.map((b) => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
-            <a className="work-link" href={item.url} target="_blank" rel="noreferrer">
-              자세히 보기 →
-            </a>
+            <div className="work-text">
+              <p className="work-index">
+                {String(i + 1).padStart(2, "0")} / {String(works.length).padStart(2, "0")}
+              </p>
+              <h2>{item.label}</h2>
+              <p className="work-number">{item.number}</p>
+              <p className="work-period">{item.period}</p>
+              <ul className="work-bullets">
+                {item.bullets.map((b) => (
+                  <li key={b}>{b}</li>
+                ))}
+              </ul>
+              <a className="work-link" href={item.url} target="_blank" rel="noreferrer">
+                자세히 보기 →
+              </a>
+            </div>
+
+            {/* 이미지가 있으면 이미지, 없으면 이모지+숫자 카드로 자리를 채웁니다 */}
+            <div className="work-visual">
+              {item.image ? (
+                <img src={item.image} alt={item.label} />
+              ) : (
+                <div className="work-card">
+                  <span className="work-emoji">{item.emoji}</span>
+                  <strong>{item.number}</strong>
+                </div>
+              )}
+            </div>
           </div>
         </section>
       ))}
