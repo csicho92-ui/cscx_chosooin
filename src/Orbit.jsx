@@ -44,17 +44,21 @@ function Orbit() {
     // 가로로 넓게, 세로로 납작하게 퍼지는 타원 궤도
     const spreadX = 1;
     const spreadY = 0.8;
+    // 궤도 중심. 왼쪽 위 헤드라인을 피해 살짝 오른쪽 아래로
+    const cx = W * 0.58;
+    const cy = H * 0.56;
 
     const bodies = ITEMS.map((item, i) => {
       const isWork = item.type === "work";
       const order = isWork ? i : i - workCount;
       const total = isWork ? workCount : ITEMS.length - workCount;
       const angle = (order / total) * Math.PI * 2;
-      const ring = Math.min(W, H) * (isWork ? 0.22 : 0.34);
+      // 작업물은 가로로 넉넉하게, 취미는 그보다 바깥
+      const ring = isWork ? Math.min(W * 0.28, H * 0.33) : Math.min(W * 0.4, H * 0.45);
 
       const body = Matter.Bodies.circle(
-        W / 2 + Math.cos(angle) * ring * spreadX,
-        H / 2 + Math.sin(angle) * ring * spreadY,
+        cx + Math.cos(angle) * ring * spreadX,
+        cy + Math.sin(angle) * ring * spreadY,
         isWork ? 40 : 24,
         {
           restitution: 0,
@@ -64,6 +68,7 @@ function Orbit() {
       );
       body.ring = ring;
       body.isWork = isWork;
+      body.phase = angle; // 궤도 위 내 자리(각도). 밀려도 여기로 돌아옵니다
       return body;
     });
 
@@ -76,9 +81,9 @@ function Orbit() {
 
     Matter.Composite.add(engine.world, [...bodies, ...walls]);
 
+    let t = 0; // 궤도가 돈 각도. 매 프레임 조금씩 늘어납니다
     Matter.Events.on(engine, "beforeUpdate", () => {
-      const cx = W / 2;
-      const cy = H / 2;
+      t += 0.006;
 
       bodies.forEach((b) => {
         // 타원을 원처럼 다루기 위해 좌표를 눌러서 계산합니다
@@ -104,14 +109,19 @@ function Orbit() {
           pushed = true;
         }
 
-        // 2) 작업물: 정해진 궤도를 기차처럼 돕니다
+        // 2) 작업물: 궤도 위 내 자리(슬롯)가 시간에 따라 돌고, 나는 그 자리를 따라갑니다
+        //    → 간격이 항상 유지되고, 밀려도 자리로 되돌아옵니다
         if (b.isWork) {
           if (pushed) return; // 밀리는 동안은 궤도 계산을 쉽니다
-          const targetX = (-uy * 2 + ux * (b.ring - d) * 0.08) * spreadX;
-          const targetY = (ux * 2 + uy * (b.ring - d) * 0.08) * spreadY;
+          const a = b.phase + t;
+          const sx = cx + Math.cos(a) * b.ring * spreadX;
+          const sy = cy + Math.sin(a) * b.ring * spreadY;
+          // 자리까지 거리에 비례한 속도 (스프링처럼), 너무 빠르지 않게 상한
+          const vx = Math.max(-6, Math.min(6, (sx - b.position.x) * 0.08));
+          const vy = Math.max(-6, Math.min(6, (sy - b.position.y) * 0.08));
           Matter.Body.setVelocity(b, {
-            x: b.velocity.x + (targetX - b.velocity.x) * 0.06,
-            y: b.velocity.y + (targetY - b.velocity.y) * 0.06,
+            x: b.velocity.x + (vx - b.velocity.x) * 0.2,
+            y: b.velocity.y + (vy - b.velocity.y) * 0.2,
           });
           return;
         }
