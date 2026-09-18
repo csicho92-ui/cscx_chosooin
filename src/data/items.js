@@ -86,11 +86,11 @@ export const ITEMS = [
   {
     id: 7, type: "work", slug: "web", emoji: "🛠️",
     label: "랜딩 · 앱 직접 빌드",
-    number: "앱 3개",
+    number: "앱 · 웹 직접 빌드",
     period: "2026.08 ~ · 클로드코드 부트캠프",
     bullets: [
       "마케팅에서 제일 자주 막히는 지점은 '만들어 줄 사람을 기다리는 시간'",
-      "사주·MBTI 소셜 게임 앱, 가계부 앱, 커머스 화면을 React·Expo로 직접 제작",
+      "가계부 앱, 커머스 화면을 React·Expo로 직접 제작",
       "이 페이지도 직접 만들었습니다",
     ],
     url: "https://app.notion.com/p/3b2f987eedab800f94dbf8e5b8c4b1e9",
