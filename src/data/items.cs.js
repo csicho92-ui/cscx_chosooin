@@ -96,11 +96,11 @@ export const ITEMS = [
   {
     id: 8, type: "work", slug: "web", emoji: "🛠️",
     label: "FAQ · 안내 페이지 직접 제작",
-    number: "앱 3개 빌드",
+    number: "앱 · 웹 직접 빌드",
     period: "2026.08 ~ · 클로드코드 부트캠프",
     bullets: [
       "고객 안내 페이지 하나 고치려고 개발팀을 기다리는 시간이 아까웠음",
-      "React · Expo로 앱 3개를 직접 만들어 봄 — 이 페이지도 직접 제작",
+      "React · Expo로 가계부 앱 · 커머스 화면을 직접 만들어 봄 — 이 페이지도 직접 제작",
       "FAQ · 공지 · 이벤트 안내 페이지는 외주 없이 당일에 띄우고 고칠 수 있음",
     ],
     url: "https://app.notion.com/p/3b2f987eedab800f94dbf8e5b8c4b1e9",
