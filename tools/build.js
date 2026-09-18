@@ -1,19 +1,56 @@
-<!DOCTYPE html>
-<html lang="ko" class="no-js">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>조수인 | 고객관리 · CX</title>
-<meta name="description" content="고객의 불만을 개선 포인트로 바꾸는 사람입니다. 7년간 이커머스 유통사에서 하루 평균 50건의 클레임을 채팅 · 메일 · 유선으로 응대하고, B2B 거래처 20개사를 관리했습니다.">
-<meta property="og:type" content="website">
-<meta property="og:title" content="조수인 | 고객관리 · CX">
-<meta property="og:description" content="고객의 불만을 개선 포인트로 바꾸는 사람입니다. 7년간 이커머스 유통사에서 하루 평균 50건의 클레임을 채팅 · 메일 · 유선으로 응대하고, B2B 거래처 20개사를 관리했습니다.">
+#!/usr/bin/env node
+// 사용법: node tools/build.js  → index.html, projects/<slug>/index.html 생성
+const fs = require('fs');
+const path = require('path');
+const C = require('./content.js');
 
-<meta property="og:image" content="images/og.jpg">
+const ROOT = path.join(__dirname, '..');
+const esc = (s) => String(s).replace(/&(?![a-z#0-9]+;)/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const strip = (s) => String(s).replace(/<[^>]+>/g, '');
+const kindClass = { work: '', personal: 'personal', contest: 'contest', study: 'study' };
+
+const ICON = {
+  arrowDown: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12l7 7 7-7"/></svg>',
+  arrowRight: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 5l7 7-7 7"/></svg>',
+  mail: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>',
+  blog: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h11a3 3 0 0 1 3 3v11H7a3 3 0 0 1-3-3V5Z"/><path d="M8 9h7M8 13h7M8 17h4"/></svg>',
+  notion: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v16H4z"/><path d="M8 8v8M8 8l8 8V8"/></svg>',
+  pdf: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m0 0-4-4m4 4 4-4"/><path d="M5 17v2a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2"/></svg>',
+};
+
+function head({ title, desc, url, rel, ogImage }) {
+  return `<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+${url ? `<meta property="og:url" content="${esc(url)}">\n<link rel="canonical" href="${esc(url)}">` : ''}
+<meta property="og:image" content="${esc(ogImage)}">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
-<style>
+<link rel="stylesheet" href="${rel}assets/style.css">
+</head>
+<body>
+<a class="skip" href="#main">본문으로 건너뛰기</a>
+`;
+}
+
+function thumb(p, rel, big) {
+  // 이미지 파일: images/<slug>.jpg (없으면 텍스트 대체 표시). 교체 방법은 README 참고.
+  return `<figure class="thumb${big ? '' : ''}">
+  <img src="${rel}images/${p.slug}.jpg" alt="${esc(strip(p.short))} 결과물 이미지" loading="${big ? 'eager' : 'lazy'}" width="1600" height="${big ? 900 : 1000}">
+  <figcaption><b>${esc(p.thumbTitle)}</b>${esc(p.thumbSub)}</figcaption>
+</figure>`;
+}
+
+/* ---------------- 메인 페이지 (다크 · 영상 카드 템플릿) ---------------- */
+const HOME_CSS = `
 :root{--bg:#0b0d14;--fg:#eef1f8;--muted:#9aa3b8;--line:rgba(255,255,255,.1);--card:rgba(255,255,255,.04);--accent:#7c9cff;--accent2:#c98fff;--nav:64px}
 *{margin:0;padding:0;box-sizing:border-box}
 html{scroll-behavior:smooth;scroll-padding-top:var(--nav)}
@@ -193,251 +230,9 @@ dialog .cap a{color:var(--accent);text-decoration:none}
   [data-speed]{transform:none!important}
   #fx{display:none}
 }
-</style>
-</head>
-<body>
-<a class="skip" href="#home">본문으로 건너뛰기</a>
-<canvas id="fx" aria-hidden="true"></canvas>
+`;
 
-<header>
-  <nav aria-label="주 메뉴">
-    <a class="logo" href="#home">SOOIN.</a>
-    <ul>
-      <li><a href="#home">홈</a></li>
-      <li><a href="#portfolio">포트폴리오</a></li>
-      <li><a href="#about">자기소개</a></li>
-      <li><a href="#contact">연락처</a></li>
-    </ul>
-  </nav>
-</header>
-
-<main>
-  <!-- 홈 -->
-  <section id="home" class="hero">
-    <div class="blob b1" data-speed="0.35"></div>
-    <div class="blob b2" data-speed="-0.2"></div>
-    <div class="wrap">
-      <p class="eyebrow reveal">Customer Experience · 조수인</p>
-      <h1 class="reveal">고객의 불만을<br><span>개선 포인트로</span> 바꾸는<br>사람입니다.</h1>
-      <p class="lead reveal">7년간 하루 평균 50건의 클레임을 응대하고 B2B 거래처 20개사를 관리했습니다. 고객 접점에서 얻은 데이터를 상품 · 안내 · 콘텐츠 개선으로 되돌려 보냈습니다.</p>
-      <ul class="tags reveal"><li>클레임 응대 · VOC 분석</li><li>B2B 거래처 관리</li><li>주문 · 출고 · 재고 운영</li></ul>
-      <div class="cta reveal">
-        <a class="btn primary" href="#portfolio">포트폴리오 보기 →</a>
-        <a class="btn ghost" href="mailto:whtndls5@naver.com">이메일 보내기</a>
-        <a class="btn ghost" href="resume.pdf" download hidden>이력서 다운로드</a>
-      </div>
-      <div class="stats reveal" style="--stat-ms:5000ms">
-        <div class="stat-panels" aria-live="polite">
-          <div class="stat-panel on" role="tabpanel" id="stat-panel-0" aria-labelledby="stat-tab-0" aria-hidden="false">
-            <p class="stat-label">클레임 응대</p>
-            <p class="stat-pre">7년간 하루 평균</p>
-            <p class="stat-num">50<em>건</em></p>
-            <p class="stat-story">채팅 · 메일 · 유선으로 들어오는 클레임을 응대하는 데서 그치지 않고, 반복 유형을 정리해 상품 정보와 안내 문구 개선안으로 바꿔 전달했습니다.</p>
-            <a class="stat-link" href="projects/voc-system/">자세히 보기 →</a>
-          </div>
-          <div class="stat-panel" role="tabpanel" id="stat-panel-1" aria-labelledby="stat-tab-1" aria-hidden="true">
-            <p class="stat-label">B2B 거래처</p>
-            <p class="stat-pre">장기 파트너십</p>
-            <p class="stat-num">20<em>개사</em></p>
-            <p class="stat-story">거래처마다 다른 구매 주기와 이력을 기준으로 견적과 제품 추천을 맞춤 제안했습니다. 정확한 납기 · 재고 안내가 신뢰를 만들었습니다.</p>
-            <a class="stat-link" href="projects/b2b-accounts/" tabindex="-1">자세히 보기 →</a>
-          </div>
-          <div class="stat-panel" role="tabpanel" id="stat-panel-2" aria-labelledby="stat-tab-2" aria-hidden="true">
-            <p class="stat-label">공동구매 운영</p>
-            <p class="stat-pre">20개월 동안 약</p>
-            <p class="stat-num">90<em>회</em></p>
-            <p class="stat-story">약 90회를 운영하는 동안 결품이나 배송으로 인한 강성 클레임 없이 운영했습니다. 재고를 먼저 확정하고 콘텐츠를 만드는 순서를 지켰습니다.</p>
-            <a class="stat-link" href="projects/group-buying/" tabindex="-1">자세히 보기 →</a>
-          </div>
-        </div>
-        <div class="stat-dots" role="tablist" aria-label="대표 성과 슬라이드">
-          <button class="stat-dot" type="button" role="tab" id="stat-tab-0" aria-selected="true" aria-controls="stat-panel-0" aria-label="클레임 응대"></button><button class="stat-dot" type="button" role="tab" id="stat-tab-1" aria-selected="false" aria-controls="stat-panel-1" aria-label="B2B 거래처" tabindex="-1"></button><button class="stat-dot" type="button" role="tab" id="stat-tab-2" aria-selected="false" aria-controls="stat-panel-2" aria-label="공동구매 운영" tabindex="-1"></button>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 포트폴리오 -->
-  <section id="portfolio">
-    <div class="wm" data-speed="-0.15" aria-hidden="true">WORK</div>
-    <div class="wrap">
-      <h2 class="reveal">Portfolio</h2>
-      <p class="sub reveal">과정과 측정 기준은 각 카드의 상세 페이지에 있습니다.</p>
-      <div class="filters reveal" role="group" aria-label="분야별 필터">
-        <button class="filter" type="button" data-filter="all" aria-pressed="true">전체</button>
-        <button class="filter" type="button" data-filter="cs" aria-pressed="false">CS · VOC</button><button class="filter" type="button" data-filter="ops" aria-pressed="false">운영 · 물류</button><button class="filter" type="button" data-filter="commerce" aria-pressed="false">커머스 · 공동구매</button><button class="filter" type="button" data-filter="creative" aria-pressed="false">AI · 제작</button>
-      </div>
-      <div class="grid stagger">
-
-        <article class="card reveal featured" data-field="cs">
-          <a class="tile" href="projects/voc-system/" aria-label="CS · VOC 개선 체계 자세히 보기">
-            <img src="images/voc-system.jpg" alt="" loading="lazy" width="1600" height="900">
-            <span class="k">CS · VOC 분석</span>
-            <span class="num"><b>일 50건 × 7년</b><small>클레임을 콘텐츠의 출발점으로</small></span>
-          </a>
-          <a class="body" href="projects/voc-system/">
-            <p class="kind"><i class="">실무 프로젝트</i><span>2018.10 – 2026.02</span></p>
-            <h3>CS · VOC 개선 체계</h3>
-            <p class="result">일 50건 × 7년 · 동일 문의 재발 감소</p>
-            <span class="more">자세히 보기 →</span>
-          </a>
-        </article>
-
-        <article class="card reveal" data-field="cs">
-          <a class="tile" href="projects/b2b-accounts/" aria-label="B2B 거래처 관리 자세히 보기">
-            <img src="images/b2b-accounts.jpg" alt="" loading="lazy" width="1600" height="900">
-            <span class="k">B2B · 거래처 관리</span>
-            <span class="num"><b>20개사</b><small>B2B 거래처 · 장기 파트너십</small></span>
-          </a>
-          <a class="body" href="projects/b2b-accounts/">
-            <p class="kind"><i class="">실무 프로젝트</i><span>2018.10 – 2026.02</span></p>
-            <h3>B2B 거래처 관리</h3>
-            <p class="result">거래처 20개사 · 장기 파트너십 유지</p>
-            <span class="more">자세히 보기 →</span>
-          </a>
-        </article>
-
-        <article class="card reveal" data-field="ops">
-          <a class="tile" href="projects/order-ops/" aria-label="주문 · 출고 · 재고 운영 자세히 보기">
-            <img src="images/order-ops.jpg" alt="" loading="lazy" width="1600" height="900">
-            <span class="k">운영 · 물류</span>
-            <span class="num"><b>일 200건 ~</b><small>피크 시즌 수천 건 · 출고 지연 최소화</small></span>
-          </a>
-          <a class="body" href="projects/order-ops/">
-            <p class="kind"><i class="">실무 프로젝트</i><span>2018.10 – 2026.02</span></p>
-            <h3>주문 · 출고 · 재고 운영</h3>
-            <p class="result">일 200건 ~ 수천 건 · 국내 출고 + 해외 선적</p>
-            <span class="more">자세히 보기 →</span>
-          </a>
-        </article>
-
-        <article class="card reveal" data-field="commerce">
-          <a class="tile" href="projects/group-buying/" aria-label="공동구매 운영 자세히 보기">
-            <img src="images/group-buying.jpg" alt="" loading="lazy" width="1600" height="900">
-            <span class="k">커머스 · 공동구매 운영</span>
-            <span class="num"><b>약 90회</b><small>20개월 · 강성 클레임 없이</small></span>
-          </a>
-          <a class="body" href="projects/group-buying/">
-            <p class="kind"><i class="">실무 프로젝트</i><span>2024.06 – 2026.02</span></p>
-            <h3>공동구매 운영</h3>
-            <p class="result">약 90회 · 20개월 · 강성 클레임 없이</p>
-            <span class="more">자세히 보기 →</span>
-          </a>
-        </article>
-
-        <article class="card reveal" data-field="cs">
-          <button class="thumb" data-yt="Cg3FJQdvLfQ" data-title="VOC를 콘텐츠로 · SNS 채널 — 숏폼 ① 정보형 콘텐츠" data-url="https://www.youtube.com/watch?v=Cg3FJQdvLfQ" aria-label="VOC를 콘텐츠로 · SNS 채널 영상 크게 보기">
-            <img src="https://i.ytimg.com/vi/Cg3FJQdvLfQ/hqdefault.jpg" alt="" loading="lazy" width="480" height="360">
-            <span class="play"><b>▶</b><small>숏폼 ① 정보형 콘텐츠</small></span>
-          </button>
-          <a class="body" href="projects/sns-channel/">
-            <p class="kind"><i class="">실무 프로젝트</i><span>2024.06 – 2026.02</span></p>
-            <h3>VOC를 콘텐츠로 · SNS 채널</h3>
-            <p class="result">팔로워 1,000 → 10,000 · 10개월</p>
-            <span class="more">자세히 보기 →</span>
-          </a>
-        </article>
-
-        <article class="card reveal" data-field="ops">
-          <a class="tile" href="projects/ops-process/" aria-label="운영 프로세스 설계 자세히 보기">
-            <img src="images/ops-process.jpg" alt="" loading="lazy" width="1600" height="900">
-            <span class="k">운영 · 프로세스</span>
-            <span class="num"><b>누락 최소화</b><small>체크리스트 · 운영 캘린더 · 1년</small></span>
-          </a>
-          <a class="body" href="projects/ops-process/">
-            <p class="kind"><i class="">실무 프로젝트</i><span>2017.03 – 2018.02</span></p>
-            <h3>운영 프로세스 설계</h3>
-            <p class="result">체크리스트 · 운영 캘린더 · 준비 누락 최소화</p>
-            <span class="more">자세히 보기 →</span>
-          </a>
-        </article>
-
-        <article class="card reveal featured" data-field="creative">
-          <button class="thumb" data-yt="rPshS8vxwPE" data-title="AI 기업 홍보영상 — 수상작 · 주주콘크리트 홍보영상" data-url="https://www.youtube.com/watch?v=rPshS8vxwPE" aria-label="AI 기업 홍보영상 영상 크게 보기">
-            <img src="https://i.ytimg.com/vi/rPshS8vxwPE/hqdefault.jpg" alt="" loading="lazy" width="480" height="360">
-            <span class="play"><b>▶</b><small>수상작 · 주주콘크리트 홍보영상</small></span>
-          </button>
-          <a class="body" href="projects/ai-video/">
-            <p class="kind"><i class="contest">공모전</i><span>2026</span></p>
-            <h3>AI 기업 홍보영상</h3>
-            <p class="result">최우수상 · 2026 기업 맞춤형 AI 영상 공모전</p>
-            <span class="more">자세히 보기 →</span>
-          </a>
-        </article>
-
-        <article class="card reveal" data-field="creative">
-          <a class="tile" href="projects/web-building/" aria-label="웹빌딩 (FAQ · 안내 페이지) 자세히 보기">
-            <img src="images/web-building.jpg" alt="" loading="lazy" width="1600" height="900">
-            <span class="k">웹 · 앱 프로토타입</span>
-            <span class="num"><b>앱 · 웹 직접 빌드</b><small>기획 → 구현까지 직접</small></span>
-          </a>
-          <a class="body" href="projects/web-building/">
-            <p class="kind"><i class="study">교육 과정 프로젝트</i><span>2026.08 – 현재</span></p>
-            <h3>웹빌딩 (FAQ · 안내 페이지)</h3>
-            <p class="result">가계부 앱 · 커머스 화면 직접 빌드</p>
-            <span class="more">자세히 보기 →</span>
-          </a>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <!-- 자기소개 -->
-  <section id="about">
-    <div class="wm" data-speed="0.15" aria-hidden="true">ABOUT</div>
-    <div class="wrap">
-      <h2 class="reveal">About</h2>
-      <p class="sub reveal">주문 · 출고 → CS → B2B 영업지원 → SNS · 공동구매까지, 고객 접점에서 시작해 운영 전체로 넓혀 왔습니다.</p>
-      <div class="cols stagger">
-        <div class="panel reveal">
-          <h3>경력</h3>
-          <ul class="tl"><li><time>2018.10 – 2026.02</time><strong>(주)필국제무역 · 고객영업지원팀 대리</strong><p>주방 리빙용품 B2B·B2C 유통 (연매출 30억)</p></li><li><time>2017.03 – 2018.02</time><strong>배재대학교 행정조교</strong><p>학과 행정</p></li></ul>
-        </div>
-        <div class="panel reveal">
-          <h3>스킬</h3>
-          <ul class="stack"><li>Excel (수식 · 피벗)</li><li>채팅 · 메일 · 유선 CS</li><li>쿠팡 · 홈쇼핑 · 종합몰 입점 운영</li><li>네이버 스마트스토어</li><li>인스타그램</li><li>Photoshop</li><li>CapCut</li><li>Gemini · ChatGPT · Claude</li><li>Notion</li><li>HTML / CSS / JS</li><li>React · Next.js</li><li>Claude Code</li></ul>
-        </div>
-        <div class="panel reveal">
-          <h3>수상 · 교육 · 학력</h3>
-          <ul class="tl"><li><time>2026.08 – 현재</time><strong>강동 5기 풀스택 프로덕트 빌더 클로드코드 부트캠프</strong><p>교육</p></li><li><time>2026</time><strong>2026 기업 맞춤형 AI 영상 제작 공모전<span class="award">최우수상</span></strong><p>경기북부여성새로일하기센터</p></li><li><time>2026.03 – 2026.07</time><strong>AI 활용 디지털 마케팅 전문가 양성과정</strong><p>경기북부여성새로일하기센터</p></li><li><time>2026.02 – 2026.05</time><strong>디자인 올인원 챌린지 100</strong><p>개인</p></li><li><time>2012.03 – 2017.02</time><strong>배재대학교 복지신학과 졸업<span class="award">수석 졸업</span></strong></li></ul>
-        </div>
-        <div class="panel reveal">
-          <h3>일하는 방식</h3>
-          <ul class="values">
-            <li><strong>클레임을 &quot;처리할 건&quot;이 아니라 &quot;고칠 포인트&quot;로 봅니다</strong><a href="projects/voc-system/">클레임 재발 방지 체계 →</a></li><li><strong>정확한 납기와 재고 정보가 신뢰를 만듭니다</strong><a href="projects/b2b-accounts/">B2B 거래처 20개사 →</a></li><li><strong>순서를 지키면 클레임이 줄어듭니다</strong><a href="projects/group-buying/">공동구매 운영 약 90회 →</a></li><li><strong>고객이 묻기 전에 답합니다</strong><a href="projects/sns-channel/">VOC를 콘텐츠로 →</a></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 연락처 -->
-  <section id="contact" class="contact">
-    <div class="wm" data-speed="-0.15" aria-hidden="true">HELLO</div>
-    <div class="wrap">
-      <h2 class="reveal">Contact</h2>
-      <p class="sub reveal">포지션 이야기, 자료 요청, 커피챗 모두 환영합니다. 보통 당일 안에 답장합니다.</p>
-      <div class="clist stagger">
-        <a class="reveal" href="mailto:whtndls5@naver.com?subject=%5B%EC%B1%84%EC%9A%A9%5D%20%EC%A1%B0%EC%88%98%EC%9D%B8%20%EB%A7%88%EC%BC%80%ED%84%B0%20%ED%8F%AC%EC%A7%80%EC%85%98%20%EA%B4%80%EB%A0%A8"><span>✉️</span><strong>이메일 보내기</strong><small>whtndls5@naver.com</small></a>
-        <button class="reveal" type="button" id="copy-email" data-email="whtndls5@naver.com"><span>📋</span><strong>이메일 복사</strong><small>클립보드에 주소 복사</small></button>
-        <a class="reveal" href="https://app.notion.com/p/a61f987eedab83eebe1781424f65bc0c" target="_blank" rel="noopener" title="새 창에서 열림"><span>🗂️</span><strong>노션 포트폴리오</strong><small>프로젝트 상세 · 경력기술서 원본</small></a>
-        <a class="reveal" href="https://blog.naver.com/whtndls5" target="_blank" rel="noopener" title="새 창에서 열림"><span>✍️</span><strong>네이버 블로그</strong><small>blog.naver.com/whtndls5 — 마케팅 · AI</small></a>
-        <a class="reveal" href="resume.pdf" download hidden><span>📄</span><strong>이력서</strong><small>PDF 다운로드</small></a>
-      </div>
-      <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
-    </div>
-  </section>
-</main>
-
-<footer>© 2026 조수인 · Built with vanilla HTML / CSS / JS</footer>
-
-<dialog id="player">
-  <button class="close" aria-label="닫기">×</button>
-  <div class="frame"></div>
-  <p class="cap"></p>
-</dialog>
-
-<script>
+const HOME_JS = `
 document.documentElement.classList.remove('no-js');
 const rm = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const hover = matchMedia('(hover: hover)').matches;
@@ -586,9 +381,275 @@ if (statTabs.length) {
   });
   restart();
 }
+`;
 
+function buildIndex() {
+  const S = C.site, I = C.intro;
+  const url = S.baseUrl ? S.baseUrl.replace(/\/$/, '') + '/' : '';
+  const title = `${S.name} | ${S.role}`;
+  const desc = strip(I.headline) + ' ' + strip(I.sub[0]);
+  const yt = (id) => `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
+  const ytUrl = (id) => `https://www.youtube.com/watch?v=${id}`;
+
+  const cards = C.projects.map((p) => {
+    const media = p.videos && p.videos.length
+      ? `<button class="thumb" data-yt="${p.videos[0].id}" data-title="${esc(strip(p.short))} — ${esc(p.videos[0].label)}" data-url="${ytUrl(p.videos[0].id)}" aria-label="${esc(strip(p.short))} 영상 크게 보기">
+            <img src="${yt(p.videos[0].id)}" alt="" loading="lazy" width="480" height="360">
+            <span class="play"><b>▶</b><small>${esc(p.videos[0].label)}</small></span>
+          </button>`
+      : `<a class="tile" href="projects/${p.slug}/" aria-label="${esc(strip(p.short))} 자세히 보기">
+            <img src="images/${p.slug}.jpg" alt="" loading="lazy" width="1600" height="900">
+            <span class="k">${esc(p.fieldLabel)}</span>
+            <span class="num"><b>${esc(p.thumbTitle)}</b><small>${esc(p.thumbSub)}</small></span>
+          </a>`;
+    // 카드는 제목 + 결과 한 줄만. 설명 · 외부 링크는 상세 페이지에서. 본문 전체가 상세로 가는 링크
+    return `
+        <article class="card reveal${p.featured ? ' featured' : ''}" data-field="${p.field}">
+          ${media}
+          <a class="body" href="projects/${p.slug}/">
+            <p class="kind"><i class="${kindClass[p.kind]}">${esc(p.kindLabel)}</i><span>${esc(p.period)}</span></p>
+            <h3>${esc(p.short)}</h3>
+            <p class="result">${esc(p.resultShort)}</p>
+            <span class="more">자세히 보기 →</span>
+          </a>
+        </article>`;
+  }).join('\n');
+
+  const stack = `<ul class="stack">${(C.stack || ['Photoshop','Illustrator','CapCut','Gemini · ChatGPT · Claude','인스타그램','네이버 블로그','Meta Ads','네이버 검색광고','Excel','Notion','HTML / CSS / JS','React · Next.js','Expo','Claude Code']).map((x) => `<li>${x}</li>`).join('')}</ul>`;
+  const career = C.about.history.filter((h) => /필국제무역|행정조교/.test(h.title));
+  const edu = C.about.history.filter((h) => !/필국제무역|행정조교/.test(h.title));
+  const tl = (arr) => arr.map((h) => `<li><time>${esc(h.time)}</time><strong>${esc(h.title)}${h.award ? `<span class="award">${esc(h.award)}</span>` : ''}</strong>${h.org ? `<p>${esc(h.org.split(' · ')[0])}</p>` : ''}</li>`).join('');
+
+  let h = `<!DOCTYPE html>
+<html lang="ko" class="no-js">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>${esc(title)}</title>
+<meta name="description" content="${esc(desc)}">
+<meta property="og:type" content="website">
+<meta property="og:title" content="${esc(title)}">
+<meta property="og:description" content="${esc(desc)}">
+${url ? `<meta property="og:url" content="${esc(url)}">\n<link rel="canonical" href="${esc(url)}">` : ''}
+<meta property="og:image" content="${esc(url)}images/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>${HOME_CSS}</style>
+</head>
+<body>
+<a class="skip" href="#home">본문으로 건너뛰기</a>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<header>
+  <nav aria-label="주 메뉴">
+    <a class="logo" href="#home">SOOIN.</a>
+    <ul>
+      <li><a href="#home">홈</a></li>
+      <li><a href="#portfolio">포트폴리오</a></li>
+      <li><a href="#about">자기소개</a></li>
+      <li><a href="#contact">연락처</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <!-- 홈 -->
+  <section id="home" class="hero">
+    <div class="blob b1" data-speed="0.35"></div>
+    <div class="blob b2" data-speed="-0.2"></div>
+    <div class="wrap">
+      <p class="eyebrow reveal">${esc(S.roleEn || 'Marketer')} · ${esc(S.name)}</p>
+      <h1 class="reveal">${I.h1 || '고객의 말을<br><span>콘텐츠로 번역</span>하는<br>마케터입니다.'}</h1>
+      <p class="lead reveal">${I.lead || '7년간 하루 평균 50건의 고객 문의를 들었고, 그 데이터로 SNS 팔로워를 10개월 만에 10배로 키웠습니다.'}</p>
+      <ul class="tags reveal">${I.keywords.map((k) => `<li>${esc(k)}</li>`).join('')}</ul>
+      <div class="cta reveal">
+        <a class="btn primary" href="#portfolio">포트폴리오 보기 →</a>
+        <a class="btn ghost" href="mailto:${esc(S.email)}">이메일 보내기</a>
+        <a class="btn ghost" href="${esc(S.resume.file)}" download${S.resume.ready ? '' : ' hidden'}>이력서 다운로드</a>
+      </div>
+      <div class="stats reveal" style="--stat-ms:${I.slideMs || 5000}ms">
+        <div class="stat-panels" aria-live="polite">
+          ${I.metrics.map((m, i) => `<div class="stat-panel${i === 0 ? ' on' : ''}" role="tabpanel" id="stat-panel-${i}" aria-labelledby="stat-tab-${i}" aria-hidden="${i !== 0}">
+            <p class="stat-label">${esc(m.label)}</p>
+            <p class="stat-pre">${esc(m.pre)}</p>
+            <p class="stat-num">${esc(m.num)}<em>${esc(m.unit)}</em></p>
+            <p class="stat-story">${esc(m.story)}</p>
+            <a class="stat-link" href="projects/${m.slug}/"${i ? ' tabindex="-1"' : ''}>자세히 보기 →</a>
+          </div>`).join('\n          ')}
+        </div>
+        <div class="stat-dots" role="tablist" aria-label="대표 성과 슬라이드">
+          ${I.metrics.map((m, i) => `<button class="stat-dot" type="button" role="tab" id="stat-tab-${i}" aria-selected="${i === 0}" aria-controls="stat-panel-${i}" aria-label="${esc(m.label)}"${i ? ' tabindex="-1"' : ''}></button>`).join('')}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 포트폴리오 -->
+  <section id="portfolio">
+    <div class="wm" data-speed="-0.15" aria-hidden="true">WORK</div>
+    <div class="wrap">
+      <h2 class="reveal">Portfolio</h2>
+      <p class="sub reveal">과정과 측정 기준은 각 카드의 상세 페이지에 있습니다.</p>
+      <div class="filters reveal" role="group" aria-label="분야별 필터">
+        <button class="filter" type="button" data-filter="all" aria-pressed="true">전체</button>
+        ${C.fields.map((f) => `<button class="filter" type="button" data-filter="${f.key}" aria-pressed="false">${esc(f.label)}</button>`).join('')}
+      </div>
+      <div class="grid stagger">
+${cards}
+      </div>
+    </div>
+  </section>
+
+  <!-- 자기소개 -->
+  <section id="about">
+    <div class="wm" data-speed="0.15" aria-hidden="true">ABOUT</div>
+    <div class="wrap">
+      <h2 class="reveal">About</h2>
+      <p class="sub reveal">${C.about.oneLiner || '운영 → CS → 영업지원 → SNS · 광고까지, 고객 접점에서 얻은 데이터로 콘텐츠를 만듭니다.'}</p>
+      <div class="cols stagger">
+        <div class="panel reveal">
+          <h3>경력</h3>
+          <ul class="tl">${tl(career)}</ul>
+        </div>
+        <div class="panel reveal">
+          <h3>스킬</h3>
+          ${stack}
+        </div>
+        <div class="panel reveal">
+          <h3>수상 · 교육 · 학력</h3>
+          <ul class="tl">${tl(edu)}</ul>
+        </div>
+        <div class="panel reveal">
+          <h3>일하는 방식</h3>
+          <ul class="values">
+            ${C.approach.map((a) => `<li><strong>${esc(a.title)}</strong><a href="projects/${a.cases[0].slug}/">${esc(a.cases[0].label)} →</a></li>`).join('')}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 연락처 -->
+  <section id="contact" class="contact">
+    <div class="wm" data-speed="-0.15" aria-hidden="true">HELLO</div>
+    <div class="wrap">
+      <h2 class="reveal">Contact</h2>
+      <p class="sub reveal">포지션 이야기, 자료 요청, 커피챗 모두 환영합니다. 보통 당일 안에 답장합니다.</p>
+      <div class="clist stagger">
+        <a class="reveal" href="mailto:${esc(S.email)}?subject=${encodeURIComponent('[채용] 조수인 마케터 포지션 관련')}"><span>✉️</span><strong>이메일 보내기</strong><small>${esc(S.email)}</small></a>
+        <button class="reveal" type="button" id="copy-email" data-email="${esc(S.email)}"><span>📋</span><strong>이메일 복사</strong><small>클립보드에 주소 복사</small></button>
+        ${S.channels.map((c) => `<a class="reveal" href="${esc(c.url)}" target="_blank" rel="noopener" title="새 창에서 열림"><span>${c.icon === 'blog' ? '✍️' : '🗂️'}</span><strong>${esc(c.label)}</strong><small>${esc(c.sub)}</small></a>`).join('\n        ')}
+        <a class="reveal" href="${esc(S.resume.file)}" download${S.resume.ready ? '' : ' hidden'}><span>📄</span><strong>이력서</strong><small>PDF 다운로드</small></a>
+      </div>
+      <p class="copy-status" id="copy-status" role="status" aria-live="polite"></p>
+    </div>
+  </section>
+</main>
+
+<footer>© 2026 ${esc(S.name)} · Built with vanilla HTML / CSS / JS</footer>
+
+<dialog id="player">
+  <button class="close" aria-label="닫기">×</button>
+  <div class="frame"></div>
+  <p class="cap"></p>
+</dialog>
+
+<script>${HOME_JS}
 /* 카드 하단의 추가 영상 링크 */
 $('.thumb-link').forEach(a => a.addEventListener('click', e => { e.preventDefault(); open(a.dataset.yt, a.dataset.title, a.dataset.url); }));
 </script>
 </body>
 </html>
+`;
+  fs.writeFileSync(path.join(ROOT, 'index.html'), h);
+}
+
+/* ---------------- 상세 페이지 ---------------- */
+function section(id, title, items, kind, slug) {
+  if (!items || !items.length) return '';
+  let body;
+  if (kind === 'results') {
+    body = `<ul class="result-list">${items.map((r) => `<li><b>${r.b}</b>${r.basis ? `<span class="basis">${r.basis}</span>` : ''}</li>`).join('')}</ul>`;
+  } else if (kind === 'gallery') {
+    body = `<div class="gallery">${items.map((g, i) => `<figure class="thumb"><img src="../../images/${slug}-${i + 1}.jpg" alt="${esc(g)}" loading="lazy" width="1200" height="900"><figcaption><b>${esc(g)}</b>이미지 준비 중</figcaption></figure>`).join('')}</div>`;
+  } else if (kind === 'p') {
+    body = items.map((t) => `<p>${t}</p>`).join('');
+  } else {
+    body = `<ul>${items.map((t) => `<li>${t}</li>`).join('')}</ul>`;
+  }
+  return `<section aria-labelledby="${id}-h"><h2 id="${id}-h">${esc(title)}</h2>${body}</section>`;
+}
+
+function buildProject(p, idx) {
+  const S = C.site, D = p.detail;
+  const rel = '../../';
+  const base = S.baseUrl ? S.baseUrl.replace(/\/$/, '') : '';
+  const url = base ? `${base}/projects/${p.slug}/` : '';
+  const title = `${strip(p.short)} — ${S.name} 포트폴리오`;
+  const desc = `${strip(p.problem)} · 성과: ${strip(p.result)}`;
+  const prev = C.projects[idx - 1], next = C.projects[idx + 1];
+  let h = head({ title, desc, url, rel, ogImage: (base ? base + '/' : '../../') + `images/${p.slug}.jpg` });
+
+  h += `
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="${rel}index.html">${esc(S.name)} <span>· ${esc(S.role)}</span></a>
+    <nav aria-label="페이지 이동"><a class="back" href="${rel}index.html#projects">← 프로젝트 목록으로</a></nav>
+  </div>
+</header>
+
+<main id="main">
+  <div class="wrap">
+    <header class="detail-head">
+      <p class="kicker"><span class="kind ${kindClass[p.kind]} tag">${esc(p.kindLabel)}</span><span>${esc(p.fieldLabel)}</span><span aria-hidden="true">·</span><time>${esc(p.period)}</time></p>
+      <h1>${esc(p.title)}</h1>
+      <dl class="summary">
+        <div><dt>기간</dt><dd>${esc(p.period)}</dd></div>
+        <div><dt>분야</dt><dd>${esc(p.fieldLabel)}</dd></div>
+        <div><dt>역할</dt><dd>${esc(p.role)}</dd></div>
+        <div><dt>핵심 결과</dt><dd class="big">${D.summaryResult}</dd></div>
+      </dl>
+      ${p.heroImage ? `<div class="hero-figure">${thumb(p, rel, true)}</div>` : ''}
+    </header>
+
+    <article class="article">
+      ${section('scope', '참여 범위', D.scope)}
+      ${section('background', '배경과 문제', D.background, 'p')}
+      ${section('goal', '목표', D.goal)}
+      ${section('insight', '타깃과 인사이트', D.insight, 'p')}
+      ${section('strategy', '전략', D.strategy)}
+      ${section('execution', '실행', D.execution)}
+      ${section('results', '성과', D.results, 'results')}
+      ${D.figures && D.figures.length ? `<div class="shots">${D.figures.map((f) => `<figure class="shot"><img src="${rel}images/${f.file}" alt="${esc(f.caption)}" loading="lazy"><figcaption>${esc(f.caption)}</figcaption></figure>`).join('')}</div>` : ''}
+      ${D.limits ? `<p class="callout"><strong>측정 기준과 한계.</strong> ${D.limits}</p>` : ''}
+      ${section('retro', '회고', D.retro)}
+      ${section('gallery', '결과물', D.gallery, 'gallery', p.slug)}
+      ${p.links && p.links.length ? `<section aria-labelledby="links-h"><h2 id="links-h">관련 링크</h2><p class="links-list">${p.links.map((l) => `<a href="${esc(l.url)}" target="_blank" rel="noopener" title="새 창에서 열림">${esc(l.label)}</a>`).join('')}</p><p class="note">외부 링크는 새 창에서 열립니다.</p></section>` : ''}
+    </article>
+
+    <footer class="detail-foot">
+      <div class="row">
+        <a class="btn btn-secondary" href="${rel}index.html#projects">← 프로젝트 목록으로</a>
+        <a class="btn btn-primary" href="mailto:${esc(S.email)}?subject=${encodeURIComponent('[채용] ' + strip(p.short) + ' 프로젝트 관련')}">${ICON.mail} 이메일로 연락하기</a>
+      </div>
+      <nav class="pager" aria-label="다른 프로젝트">
+        ${prev ? `<a href="../${prev.slug}/">← ${esc(prev.short)}</a>` : ''}
+        ${next ? `<a href="../${next.slug}/">${esc(next.short)} →</a>` : ''}
+      </nav>
+    </footer>
+  </div>
+</main>
+<script src="${rel}assets/main.js" defer></script>
+</body>
+</html>
+`;
+  const dir = path.join(ROOT, 'projects', p.slug);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, 'index.html'), h);
+}
+
+buildIndex();
+C.projects.forEach(buildProject);
+fs.mkdirSync(path.join(ROOT, 'images'), { recursive: true });
+console.log('built: index.html + ' + C.projects.length + ' project pages');

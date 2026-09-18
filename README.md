@@ -1,16 +1,8 @@
-# React + Vite
+# 조수인 — 고객관리 · CX 포트폴리오
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+정적 사이트. `tools/content.js` 만 수정하고 `node tools/build.js` 를 실행하면
+`index.html` 과 `projects/*/index.html` 이 다시 만들어집니다.
 
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
-
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- `tools/build.js` — 생성기 (마케터 사이트 `portfolio-site` 와 동일 파일, 수정 시 양쪽에 복사)
+- `tools/make-content.js` — 최초 1회 마케터 콘텐츠에서 변환할 때 쓴 스크립트 (이후엔 content.js 직접 수정)
+- `images/` — 상세 페이지 캡처 등
